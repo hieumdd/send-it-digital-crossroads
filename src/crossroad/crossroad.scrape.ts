@@ -1,4 +1,7 @@
-import { chromium } from 'playwright';
+import playwright, { chromium } from 'playwright';
+
+import { getSecret } from '../secret-manager/secret-manager.service';
+import { createDateRange } from '../utils';
 
 export const initializeBrowser = async () => {
     const browser = await chromium.launch({ headless: false });
@@ -39,36 +42,63 @@ export type ScrapeCampaignNumberResult = CampaignNumber & {
 export const scrapeCampaignNumber = async (options: ScrapeCampaignNumberOptions) => {
     const { start, end, campaignIds } = options;
 
+    const [username, password] = await Promise.all([
+        getSecret('crossroads-username'),
+        getSecret('crossroads-password'),
+    ]);
+
     const { browser, page } = await initializeBrowser();
 
     await page.goto('https://crossroads.domainactive.com/docs#instant-api-get-campaigns-info');
-    await page.locator('#usernameInput').fill(process.env.CROSSROAD_USERNAME || '');
-    await page.locator('#passwordInput').fill(process.env.CROSSROAD_PASSWROD || '');
+    await page.locator('#usernameInput').fill(username);
+    await page.locator('#passwordInput').fill(password);
     await page.locator('button[type=submit]').click();
 
-    await page.waitForTimeout(10_000);
+    try {
+        await page.waitForSelector('a[href="/admin/trafficguard/?noforward=true"]', {
+            timeout: 10_000,
+        });
 
-    const results = await page.evaluate(
-        async ({ start, end, campaignIds }) => {
-            const responses = campaignIds.map(async (campaignId) => {
-                const url = `https://crossroads.domainactive.com/admin/trafficguard/load/campaign/${campaignId}/campaign_number/?start_date=${start}&end_date=${end}`;
+        const dates = createDateRange({ start, end }).map((date) => date.format('YYYY-MM-DD'));
 
-                return fetch(url, { credentials: 'include' })
-                    .then((response) => response.json() as Promise<LoadApiResponse>)
-                    .then((result) => {
-                        return result.rows.map((row) => ({
-                            ...row,
-                            campaign_id: campaignId,
-                            date: start,
-                        }));
+        const results = await page
+            .evaluate(
+                async ({ dates, campaignIds }) => {
+                    const responses = dates.flatMap((date) => {
+                        return campaignIds.map(async (campaignId) => {
+                            const url = new URL(
+                                `https://crossroads.domainactive.com/admin/trafficguard/load/campaign/${campaignId}/campaign_number/`,
+                            );
+                            url.searchParams.set('start_date', date);
+                            url.searchParams.set('end_date', date);
+
+                            return fetch(url.toString(), { credentials: 'include' })
+                                .then((response) => response.json() as Promise<LoadApiResponse>)
+                                .then((result) => {
+                                    return result.rows.map((row) => ({
+                                        ...row,
+                                        date,
+                                        campaign_id: campaignId,
+                                    }));
+                                });
+                        });
                     });
-            });
-            return Promise.all(responses);
-        },
-        { start, end, campaignIds },
-    );
+                    return Promise.all(responses);
+                },
+                { dates, campaignIds },
+            )
+            .then((results) => results.flat());
 
-    await browser.close();
+        await browser.close();
 
-    return results.flat();
+        return results;
+    } catch (error) {
+        if (error instanceof playwright.errors.TimeoutError) {
+            console.log(JSON.stringify({ severity: 'WARN', message: 'captcha' }));
+        }
+
+        await browser.close();
+
+        return Promise.reject(error);
+    }
 };

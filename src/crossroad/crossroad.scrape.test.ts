@@ -9,9 +9,7 @@ it('scrape-campaign-number', async () => {
     const campaignIds = await getCampaignIds(options);
 
     return scrapeCampaignNumber({ ...options, campaignIds }).then((results) => {
-        results.forEach((result) => {
-            console.log(result);
-            expect(result).toBeDefined();
-        });
+        console.log(results);
+        expect(results).toBeDefined();
     });
 });
