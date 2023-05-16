@@ -33,7 +33,7 @@ export type LoadApiResponse = { rows: CampaignNumber[] };
 
 export type ScrapeCampaignNumberResult = CampaignNumber & {
     campaign_id: number;
-    datetime: string;
+    date: string;
 };
 
 export const scrapeCampaignNumber = async (options: ScrapeCampaignNumberOptions) => {
@@ -59,7 +59,7 @@ export const scrapeCampaignNumber = async (options: ScrapeCampaignNumberOptions)
                         return result.rows.map((row) => ({
                             ...row,
                             campaign_id: campaignId,
-                            datetime: start,
+                            date: start,
                         }));
                     });
             });
