@@ -14,21 +14,26 @@ type ScrapeCampaignNumberOptions = {
     end: string;
 };
 
-type LoadApiResponse = {
-    rows: {
-        campaign_number: string;
-        ctr: number;
-        filtered_visitors: number;
-        fraud_score: number;
-        lander_searches: number;
-        publisher_revenue: number;
-        revenue_events: number;
-        rpc: number;
-        rpm: number;
-        rpv: number;
-        visitors: number;
-        volume_by_visitors: number;
-    }[];
+export type CampaignNumber = {
+    campaign_number: string;
+    ctr: number;
+    filtered_visitors: number;
+    fraud_score: number;
+    lander_searches: number;
+    publisher_revenue: number;
+    revenue_events: number;
+    rpc: number;
+    rpm: number;
+    rpv: number;
+    visitors: number;
+    volume_by_visitors: number;
+};
+
+export type LoadApiResponse = { rows: CampaignNumber[] };
+
+export type ScrapeCampaignNumberResult = CampaignNumber & {
+    campaign_id: number;
+    datetime: string;
 };
 
 export const scrapeCampaignNumber = async (options: ScrapeCampaignNumberOptions) => {

@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-type GetCampaignIdsOptions = { start: string; end: string };
+export type GetCampaignIdsOptions = { start: string; end: string };
 
 type GetCampaignInfosResponse = { campaigns_info: { campaign_id: number }[] };
 
