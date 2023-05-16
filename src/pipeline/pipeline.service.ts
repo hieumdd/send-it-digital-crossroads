@@ -1,12 +1,19 @@
 import Joi from 'joi';
+import { Dayjs } from 'dayjs';
 
-import { load } from '../bigquery/bigquery.service';
-import { GetCampaignIdsOptions, getCampaignIds } from '../crossroad/crossroad.service';
+import { getCampaignIds } from '../crossroad/crossroad.service';
 import { ScrapeCampaignNumberResult, scrapeCampaignNumber } from '../crossroad/crossroad.scrape';
+import { writeFile } from '../cloud-storage/cloud-storage';
 
-type RunPipelineOptions = GetCampaignIdsOptions & { table: string };
+export type RunPipelineConfig = { table: string; filename: (date: Dayjs) => string };
+type RunPipelineOptions = { start: Dayjs; end: Dayjs };
 
-export const runPipeline = async (options: RunPipelineOptions) => {
+export const runPipeline = async (config: RunPipelineConfig, options: RunPipelineOptions) => {
+    const serviceOptions = {
+        start: options.start.format('YYYY-MM-DD'),
+        end: options.end.format('YYYY-MM-DD'),
+    };
+
     const schema = Joi.object<ScrapeCampaignNumberResult>({
         campaign_id: Joi.number().unsafe(),
         campaign_number: Joi.string().allow(null).empty(''),
@@ -24,28 +31,16 @@ export const runPipeline = async (options: RunPipelineOptions) => {
         volume_by_visitors: Joi.number().unsafe(),
     });
 
-    return getCampaignIds(options)
-        .then((campaignIds) => scrapeCampaignNumber({ ...options, campaignIds }))
-        .then((rows) => rows.map((row) => Joi.attempt(row, schema)))
-        .then((rows) => {
-            return load(rows, {
-                table: options.table,
-                schema: [
-                    { name: 'campaign_id', type: 'INTEGER' },
-                    { name: 'campaign_number', type: 'STRING' },
-                    { name: 'ctr', type: 'FLOAT' },
-                    { name: 'date', type: 'DATE' },
-                    { name: 'filtered_visitors', type: 'FLOAT' },
-                    { name: 'fraud_score', type: 'INTEGER' },
-                    { name: 'lander_searches', type: 'INTEGER' },
-                    { name: 'publisher_revenue', type: 'FLOAT' },
-                    { name: 'revenue_events', type: 'INTEGER' },
-                    { name: 'rpc', type: 'FLOAT' },
-                    { name: 'rpm', type: 'FLOAT' },
-                    { name: 'rpv', type: 'FLOAT' },
-                    { name: 'visitors', type: 'INTEGER' },
-                    { name: 'volume_by_visitors', type: 'FLOAT' },
-                ],
-            });
-        });
+    const results = await getCampaignIds(serviceOptions).then((campaignIds) =>
+        scrapeCampaignNumber({ ...serviceOptions, campaignIds }),
+    );
+
+    return Promise.all(
+        results.map(([date, rows]) => {
+            return writeFile(
+                rows.map((row) => Joi.attempt(row, schema)),
+                config.filename(date),
+            );
+        }),
+    );
 };

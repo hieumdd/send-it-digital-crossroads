@@ -4,7 +4,7 @@ import { scrapeCampaignNumber } from './crossroad.scrape';
 it('scrape-campaign-number', async () => {
     const options = {
         start: '2023-05-01',
-        end: '2023-05-03',
+        end: '2023-05-02',
     };
     const campaignIds = await getCampaignIds(options);
 

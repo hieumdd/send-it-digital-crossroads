@@ -1,7 +1,9 @@
+import { groupBy } from 'lodash';
 import playwright, { chromium } from 'playwright';
 
 import { getSecret } from '../secret-manager/secret-manager.service';
 import { createDateRange } from '../utils';
+import { Dayjs } from 'dayjs';
 
 export const initializeBrowser = async () => {
     const browser = await chromium.launch({ headless: false });
@@ -54,40 +56,42 @@ export const scrapeCampaignNumber = async (options: ScrapeCampaignNumberOptions)
     await page.locator('#passwordInput').fill(password);
     await page.locator('button[type=submit]').click();
 
+    const getCampaignNumber = async (date: Dayjs) => {
+        return page
+            .evaluate(
+                ({ date, campaignIds }) => {
+                    const responses = campaignIds.map(async (campaignId) => {
+                        const url = new URL(
+                            `https://crossroads.domainactive.com/admin/trafficguard/load/campaign/${campaignId}/campaign_number/`,
+                        );
+                        url.searchParams.set('start_date', date);
+                        url.searchParams.set('end_date', date);
+
+                        return fetch(url.toString(), { credentials: 'include' })
+                            .then((response) => response.json() as Promise<LoadApiResponse>)
+                            .then((result) => {
+                                return result.rows.map((row) => ({
+                                    ...row,
+                                    date,
+                                    campaign_id: campaignId,
+                                }));
+                            });
+                    });
+                    return Promise.all(responses);
+                },
+                { date: date.format('YYYY-MM-DD'), campaignIds },
+            )
+            .then((results) => [date, results.flat()] as const);
+    };
+
     try {
         await page.waitForSelector('a[href="/admin/trafficguard/?noforward=true"]', {
             timeout: 10_000,
         });
 
-        const dates = createDateRange({ start, end }).map((date) => date.format('YYYY-MM-DD'));
-
-        const results = await page
-            .evaluate(
-                async ({ dates, campaignIds }) => {
-                    const responses = dates.flatMap((date) => {
-                        return campaignIds.map(async (campaignId) => {
-                            const url = new URL(
-                                `https://crossroads.domainactive.com/admin/trafficguard/load/campaign/${campaignId}/campaign_number/`,
-                            );
-                            url.searchParams.set('start_date', date);
-                            url.searchParams.set('end_date', date);
-
-                            return fetch(url.toString(), { credentials: 'include' })
-                                .then((response) => response.json() as Promise<LoadApiResponse>)
-                                .then((result) => {
-                                    return result.rows.map((row) => ({
-                                        ...row,
-                                        date,
-                                        campaign_id: campaignId,
-                                    }));
-                                });
-                        });
-                    });
-                    return Promise.all(responses);
-                },
-                { dates, campaignIds },
-            )
-            .then((results) => results.flat());
+        const results = await Promise.all(
+            createDateRange({ start, end }).map((date) => getCampaignNumber(date)),
+        );
 
         await browser.close();
 
