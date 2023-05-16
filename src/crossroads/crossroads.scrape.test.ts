@@ -1,5 +1,5 @@
-import { getCampaignIds } from './crossroad.service';
-import { scrapeCampaignNumber } from './crossroad.scrape';
+import { getCampaignIds } from './crossroads.service';
+import { scrapeCampaignNumber } from './crossroads.scrape';
 
 it('scrape-campaign-number', async () => {
     const options = {

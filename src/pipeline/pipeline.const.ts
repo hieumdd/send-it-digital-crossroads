@@ -4,7 +4,7 @@ import Joi from 'joi';
 
 dayjs.extend(utc);
 
-import { GetCampaignIdsOptions } from '../crossroad/crossroad.service';
+import { GetCampaignIdsOptions } from '../crossroads/crossroads.service';
 import { RunPipelineConfig } from '../pipeline/pipeline.service';
 
 export type Pipeline = RunPipelineConfig & { validationSchema: Joi.Schema };

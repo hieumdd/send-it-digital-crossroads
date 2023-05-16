@@ -1,4 +1,3 @@
-import { groupBy } from 'lodash';
 import playwright, { chromium } from 'playwright';
 
 import { getSecret } from '../secret-manager/secret-manager.service';
@@ -6,7 +5,7 @@ import { createDateRange } from '../utils';
 import { Dayjs } from 'dayjs';
 
 export const initializeBrowser = async () => {
-    const browser = await chromium.launch({ headless: false });
+    const browser = await chromium.launch({ headless: process.env.NODE_ENV === 'dev' });
     const context = await browser.newContext();
     const page = await context.newPage();
 

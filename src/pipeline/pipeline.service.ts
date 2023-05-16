@@ -1,8 +1,8 @@
 import Joi from 'joi';
 import { Dayjs } from 'dayjs';
 
-import { getCampaignIds } from '../crossroad/crossroad.service';
-import { ScrapeCampaignNumberResult, scrapeCampaignNumber } from '../crossroad/crossroad.scrape';
+import { getCampaignIds } from '../crossroads/crossroads.service';
+import { ScrapeCampaignNumberResult, scrapeCampaignNumber } from '../crossroads/crossroads.scrape';
 import { writeFile } from '../cloud-storage/cloud-storage';
 
 export type RunPipelineConfig = {
