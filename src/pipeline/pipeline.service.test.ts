@@ -10,7 +10,7 @@ import { DailyClickHash, HourlyClickHash } from './pipeline.const';
 it('pipeline/daily', async () => {
     const options = {
         start: dayjs.utc('2023-05-01'),
-        end: dayjs.utc('2023-05-01'),
+        end: dayjs.utc('2023-05-02'),
     };
     return runPipeline(DailyClickHash, options)
         .then((result) => expect(result).toBeDefined())

@@ -5,7 +5,11 @@ import { getCampaignIds } from '../crossroad/crossroad.service';
 import { ScrapeCampaignNumberResult, scrapeCampaignNumber } from '../crossroad/crossroad.scrape';
 import { writeFile } from '../cloud-storage/cloud-storage';
 
-export type RunPipelineConfig = { table: string; filename: (date: Dayjs) => string };
+export type RunPipelineConfig = {
+    table: string;
+    date: (date: Dayjs) => { [key: string]: string };
+    filename: (date: Dayjs) => string;
+};
 type RunPipelineOptions = { start: Dayjs; end: Dayjs };
 
 export const runPipeline = async (config: RunPipelineConfig, options: RunPipelineOptions) => {
@@ -19,6 +23,7 @@ export const runPipeline = async (config: RunPipelineConfig, options: RunPipelin
         campaign_number: Joi.string().allow(null).empty(''),
         ctr: Joi.number().unsafe(),
         date: Joi.string(),
+        datetime: Joi.string(),
         filtered_visitors: Joi.number().unsafe(),
         fraud_score: Joi.number().unsafe(),
         lander_searches: Joi.number().unsafe(),
@@ -38,7 +43,7 @@ export const runPipeline = async (config: RunPipelineConfig, options: RunPipelin
     return Promise.all(
         results.map(([date, rows]) => {
             return writeFile(
-                rows.map((row) => Joi.attempt(row, schema)),
+                rows.map((row) => Joi.attempt({ ...row, ...config.date(date) }, schema)),
                 config.filename(date),
             );
         }),

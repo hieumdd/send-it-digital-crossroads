@@ -39,6 +39,7 @@ export type LoadApiResponse = { rows: CampaignNumber[] };
 export type ScrapeCampaignNumberResult = CampaignNumber & {
     campaign_id: number;
     date: string;
+    datetime: string;
 };
 
 export const scrapeCampaignNumber = async (options: ScrapeCampaignNumberOptions) => {
@@ -72,7 +73,6 @@ export const scrapeCampaignNumber = async (options: ScrapeCampaignNumberOptions)
                             .then((result) => {
                                 return result.rows.map((row) => ({
                                     ...row,
-                                    date,
                                     campaign_id: campaignId,
                                 }));
                             });
@@ -86,7 +86,7 @@ export const scrapeCampaignNumber = async (options: ScrapeCampaignNumberOptions)
 
     try {
         await page.waitForSelector('a[href="/admin/trafficguard/?noforward=true"]', {
-            timeout: 10_000,
+            timeout: 20_000,
         });
 
         const results = await Promise.all(

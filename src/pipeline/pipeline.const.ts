@@ -15,6 +15,7 @@ export const DailyClickHash: Pipeline = {
         end: Joi.string().default(dayjs.utc().format('YYYY-MM-DD')),
     }),
     table: 'campaigns_number',
+    date: (date) => ({ date: date.format('YYYY-MM-DD') }),
     filename: (date) => `campaigns-number/campaign_number_${date.format('YYYYMMDD')}.json`,
 };
 
@@ -24,5 +25,6 @@ export const HourlyClickHash: Pipeline = {
         end: Joi.string().default(dayjs.utc().format('YYYY-MM-DD')),
     }),
     table: 'campaigns_number_hourly',
+    date: (date) => ({ datetime: date.format('YYYY-MM-DD HH:mm:ss') }),
     filename: (date) => `campaigns-number-hourly/campaign_number_${date.format('YYYYMMDDHH')}.json`,
 };

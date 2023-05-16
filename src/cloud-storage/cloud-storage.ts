@@ -5,7 +5,7 @@ import { Storage } from '@google-cloud/storage';
 
 const client = new Storage();
 
-const bucket = 'send-it-digital-test';
+const bucket = 'senditdigital_crossroads';
 
 export const writeFile = async (rows: Record<string, any>[], filename: string) => {
     return pipeline(
