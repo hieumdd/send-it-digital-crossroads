@@ -37,6 +37,4 @@ app.post('/daily', controllerFactory(DailyClickHash));
 
 app.post('/hourly', controllerFactory(HourlyClickHash));
 
-app.listen(8080, () => {
-    console.log('listening');
-});
+app.listen(8080);

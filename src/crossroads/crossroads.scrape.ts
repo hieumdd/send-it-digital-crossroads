@@ -1,11 +1,11 @@
-import playwright, { chromium } from 'playwright';
+import playwright, { firefox } from 'playwright';
 
 import { getSecret } from '../secret-manager/secret-manager.service';
 import { createDateRange } from '../utils';
 import { Dayjs } from 'dayjs';
 
 export const initializeBrowser = async () => {
-    const browser = await chromium.launch({
+    const browser = await firefox.launch({
         headless: process.env.NODE_ENV === 'production',
         args: [
             '--disable-gpu',
@@ -59,9 +59,9 @@ export const scrapeCampaignNumber = async (options: ScrapeCampaignNumberOptions)
 
     const { browser, page } = await initializeBrowser();
 
-    await page.goto('https://crossroads.domainactive.com/docs#instant-api-get-campaigns-info');
-    await page.locator('#usernameInput').fill(username);
-    await page.locator('#passwordInput').fill(password);
+    await page.goto('https://crossroads.domainactive.com/login');
+    await page.locator('input#usernameInput').fill(username);
+    await page.locator('input#passwordInput').fill(password);
     await page.locator('button[type=submit]').click();
 
     const getCampaignNumber = async (date: Dayjs) => {
