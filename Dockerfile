@@ -4,9 +4,11 @@ ENV NODE_ENV build
 
 WORKDIR /app
 
-COPY . .
+COPY package*.json .
 
 RUN npm ci
+
+COPY . .
 
 RUN npx tsc --project tsconfig.build.json
 
@@ -23,6 +25,8 @@ WORKDIR /app
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/node_modules/ ./node_modules/
 COPY --from=builder /app/dist/ ./dist/
+
+RUN npx playwright install --with-deps chromium
 
 EXPOSE 8080
 
