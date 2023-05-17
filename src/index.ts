@@ -21,6 +21,7 @@ const controllerFactory = (pipeline: Pipeline): RequestHandler => {
                 runPipeline(pipeline, options)
                     .then((result) => res.status(200).json({ result }))
                     .catch((error) => {
+                        console.log(error);
                         console.log(JSON.stringify({ error }));
                         res.status(500).json({ error });
                     });
@@ -36,4 +37,6 @@ app.post('/daily', controllerFactory(DailyClickHash));
 
 app.post('/hourly', controllerFactory(HourlyClickHash));
 
-app.listen(8080);
+app.listen(8080, () => {
+    console.log('listening');
+});

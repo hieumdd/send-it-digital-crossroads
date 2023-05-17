@@ -5,7 +5,15 @@ import { createDateRange } from '../utils';
 import { Dayjs } from 'dayjs';
 
 export const initializeBrowser = async () => {
-    const browser = await chromium.launch({ headless: process.env.NODE_ENV === 'dev' });
+    const browser = await chromium.launch({
+        headless: process.env.NODE_ENV === 'production',
+        args: [
+            '--disable-gpu',
+            '--disable-dev-shm-usage',
+            '--disable-setuid-sandbox',
+            '--no-sandbox',
+        ],
+    });
     const context = await browser.newContext();
     const page = await context.newPage();
 
