@@ -14,7 +14,9 @@ export const initializeBrowser = async () => {
             '--no-sandbox',
         ],
     });
-    const context = await browser.newContext();
+    const context = await browser.newContext({
+        userAgent: 'Mozilla/5.0 (X11; Linux i686; rv:109.0) Gecko/20100101 Firefox/113.0',
+    });
     const page = await context.newPage();
 
     return { browser, context, page };
