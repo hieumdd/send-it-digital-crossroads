@@ -48,5 +48,4 @@ jobs:
           --service-account=${{ env.GCP_SA }}
           --region=${{ env.REGION }}
           --timeout=3500
-          --set-env-vars=PUBLIC_URL=${{ env.PUBLIC_URL }}
           --allow-unauthenticated
