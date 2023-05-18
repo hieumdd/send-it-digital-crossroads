@@ -21,6 +21,7 @@ const controllerFactory = (pipeline: Pipeline): RequestHandler => {
                 runPipeline(pipeline, options)
                     .then((result) => res.status(200).json({ result }))
                     .catch((error) => {
+                        console.log(error);
                         console.log(JSON.stringify({ error }));
                         res.status(500).json({ error });
                     });

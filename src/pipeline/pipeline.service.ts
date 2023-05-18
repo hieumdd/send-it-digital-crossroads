@@ -10,7 +10,7 @@ export type RunPipelineConfig = {
     date: (date: Dayjs) => { [key: string]: string };
     filename: (date: Dayjs) => string;
 };
-type RunPipelineOptions = { start: Dayjs; end: Dayjs };
+export type RunPipelineOptions = { start: Dayjs; end: Dayjs };
 
 export const runPipeline = async (config: RunPipelineConfig, options: RunPipelineOptions) => {
     const serviceOptions = {

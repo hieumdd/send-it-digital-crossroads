@@ -4,15 +4,16 @@ import Joi from 'joi';
 
 dayjs.extend(utc);
 
-import { GetCampaignIdsOptions } from '../crossroads/crossroads.service';
-import { RunPipelineConfig } from '../pipeline/pipeline.service';
+import { RunPipelineConfig, RunPipelineOptions } from '../pipeline/pipeline.service';
 
-export type Pipeline = RunPipelineConfig & { validationSchema: Joi.Schema };
+export type Pipeline = RunPipelineConfig & {
+    validationSchema: Joi.Schema<RunPipelineOptions>;
+};
 
 export const DailyClickHash: Pipeline = {
-    validationSchema: Joi.object<GetCampaignIdsOptions>({
-        start: Joi.string().default(dayjs.utc().subtract(3, 'day').format('YYYY-MM-DD')),
-        end: Joi.string().default(dayjs.utc().format('YYYY-MM-DD')),
+    validationSchema: Joi.object<RunPipelineOptions>({
+        start: Joi.string().default(dayjs.utc().subtract(3, 'day')),
+        end: Joi.string().default(dayjs.utc()),
     }),
     table: 'campaigns_number',
     date: (date) => ({ date: date.format('YYYY-MM-DD') }),
@@ -20,9 +21,9 @@ export const DailyClickHash: Pipeline = {
 };
 
 export const HourlyClickHash: Pipeline = {
-    validationSchema: Joi.object<GetCampaignIdsOptions>({
-        start: Joi.string().default(dayjs.utc().format('YYYY-MM-DD')),
-        end: Joi.string().default(dayjs.utc().format('YYYY-MM-DD')),
+    validationSchema: Joi.object<RunPipelineOptions>({
+        start: Joi.string().default(dayjs.utc()),
+        end: Joi.string().default(dayjs.utc()),
     }),
     table: 'campaigns_number_hourly',
     date: (date) => ({ datetime: date.format('YYYY-MM-DD HH:mm:ss') }),

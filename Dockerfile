@@ -4,9 +4,11 @@ ENV NODE_ENV build
 
 WORKDIR /app
 
-COPY . .
+COPY package*.json .
 
 RUN npm ci
+
+COPY . .
 
 RUN npx tsc --project tsconfig.build.json
 
@@ -20,8 +22,12 @@ ENV NODE_ENV production
 
 WORKDIR /app
 
-COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/package*.json .
 COPY --from=builder /app/node_modules/ ./node_modules/
+RUN npx playwright install --with-deps firefox
+RUN mv /root/.cache /home/.cache
+COPY --from=builder /app/node_modules/ ./node_modules/
+
 COPY --from=builder /app/dist/ ./dist/
 
 EXPOSE 8080

@@ -183,3 +183,4 @@ dist
 .pnp.*
 
 service-account.json
+Dockerfile
